@@ -4,6 +4,7 @@ import 'package:todo_app/constants/color.dart';
 import 'package:todo_app/constants/tasktype.dart';
 import 'package:todo_app/model/task.dart';
 import 'package:todo_app/screens/add_new_task.dart';
+import 'package:todo_app/service/todo_service.dart';
 import 'package:todo_app/todoitem.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,109 +46,129 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> completed = ["Game meetup", "Take out trash"];
   @override
   Widget build(BuildContext context) {
+    TodoService todoService = TodoService();
     double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
     return MaterialApp(
-        home: SafeArea(
-      child: Scaffold(
-        backgroundColor: HexColor(backgroundColor),
-        body: Column(
-          children: [
-            // Header
-            Container(
-              width: deviceWidth,
-              height: deviceHeight / 3,
-              decoration: const BoxDecoration(
-                color: Colors.purple,
-                image: DecorationImage(
-                    image: AssetImage("lib/assets/images/header.png"),
-                    fit: BoxFit.cover),
+      home: SafeArea(
+        child: Scaffold(
+          backgroundColor: HexColor(backgroundColor),
+          body: Column(
+            children: [
+              // Header
+              Container(
+                width: deviceWidth,
+                height: deviceHeight / 3,
+                decoration: const BoxDecoration(
+                  color: Colors.purple,
+                  image: DecorationImage(
+                      image: AssetImage("lib/assets/images/header.png"),
+                      fit: BoxFit.cover),
+                ),
+                child: const Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Text(
+                        "October 20, 2022",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Text(
+                        "My Todo List",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 35,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  ],
+                ),
               ),
-              child: const Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Text(
-                      "October 20, 2022",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+              // Top Column
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  child: SingleChildScrollView(
+                    child: FutureBuilder(
+                      future: todoService.getUncompletedTodos(),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == null) {
+                          return const CircularProgressIndicator();
+                        } else {
+                          return ListView.builder(
+                            primary: false,
+                            shrinkWrap: true,
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              return TodoItem(
+                                task: snapshot.data![index],
+                              );
+                            },
+                          );
+                        }
+                      },
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: Text(
-                      "My Todo List",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 35,
-                          fontWeight: FontWeight.bold),
+                ),
+              ),
+              // Completed Text
+              const Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Completed",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+              ),
+              // Bottom Column
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  child: SingleChildScrollView(
+                    child: FutureBuilder(
+                      future: todoService.getCompletedTodos(),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == null) {
+                          return const CircularProgressIndicator();
+                        } else {
+                          return ListView.builder(
+                            primary: false,
+                            shrinkWrap: true,
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              return TodoItem(
+                                task: snapshot.data![index],
+                              );
+                            },
+                          );
+                        }
+                      },
                     ),
-                  )
-                ],
-              ),
-            ),
-            // Top Column
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                child: SingleChildScrollView(
-                  child: ListView.builder(
-                    primary: false,
-                    shrinkWrap: true,
-                    itemCount: todo.length,
-                    itemBuilder: (context, index) {
-                      return TodoItem(
-                        task: todo[index],
-                      );
-                    },
                   ),
                 ),
               ),
-            ),
-            // Completed Text
-            const Padding(
-              padding: EdgeInsets.only(left: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Completed",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-            ),
-            // Bottom Column
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                child: SingleChildScrollView(
-                  child: ListView.builder(
-                    primary: false,
-                    shrinkWrap: true,
-                    itemCount: completed.length,
-                    itemBuilder: (context, index) {
-                      return TodoItem(
-                        task: todo[index],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => AddNewTaskScreen(
-                    addNewTask: (newTask) => addNewTask(newTask),
-                  ),
-                ));
-              },
-              child: const Text("Add New Task"),
-            )
-          ],
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddNewTaskScreen(
+                      addNewTask: (newTask) => addNewTask(newTask),
+                    ),
+                  ));
+                },
+                child: const Text("Add New Task"),
+              )
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }

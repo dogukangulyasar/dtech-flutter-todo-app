@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app/constants/tasktype.dart';
-import 'package:todo_app/model/task.dart';
+import 'package:todo_app/model/todo.dart';
 
 class TodoItem extends StatefulWidget {
   const TodoItem({super.key, required this.task});
-  final Task task;
+  final Todo task;
 
   @override
   State<TodoItem> createState() => _TodoItemState();
@@ -16,7 +15,7 @@ class _TodoItemState extends State<TodoItem> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: widget.task.isCompleted ? Colors.grey : Colors.white,
+      color: widget.task.completed! ? Colors.grey : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -25,25 +24,28 @@ class _TodoItemState extends State<TodoItem> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            /* TODO: Firebase işlemlerinde düzelt
             widget.task.type == TaskType.note
                 ? Image.asset("lib/assets/images/category_1.png")
                 : widget.task.type == TaskType.calendar
                     ? Image.asset("lib/assets/images/category_2.png")
                     : Image.asset("lib/assets/images/category_3.png"),
+            */
+            Image.asset("lib/assets/images/category_1.png"),
             Expanded(
               child: Column(
                 children: [
                   Text(
-                    widget.task.title,
+                    widget.task.todo!,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      decoration: widget.task.isCompleted
+                      decoration: widget.task.completed!
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
                       fontSize: 21,
                     ),
                   ),
-                  Text(widget.task.description),
+                  Text("User: ${widget.task.userId!}"),
                 ],
               ),
             ),
@@ -52,7 +54,7 @@ class _TodoItemState extends State<TodoItem> {
               onChanged: (val) => {
                 setState(() {
                   isChecked = val!;
-                  widget.task.isCompleted = !widget.task.isCompleted;
+                  widget.task.completed = !widget.task.completed!;
                 })
               },
             )
